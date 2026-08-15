@@ -10,7 +10,7 @@ Samodzielne archiwum GitHub Pages programów i występów telewizyjnych THE BOYZ
 - automatyczne dołączanie nowych folderów rocznych do `Programs by Year`,
 - wyszukiwanie po nazwie programu, nazwie pliku, numerze odcinka lub dacie `YYMMDD`,
 - filtrowanie według kolekcji, roku, rodzaju programu, rodzaju pliku oraz członka,
-- napisy z folderów `Subs/자막` przypisywane do odcinków według daty lub numeru epizodu,
+- pliki napisów `.srt`, `.vtt` i `.ass` pozostają na Dysku Google, ale są ukryte na stronie,
 - miniatury filmów generowane przez Google Drive i prowadzące bezpośrednio do odtwarzacza Drive,
 - sortowanie od najnowszych materiałów,
 - automatyczna synchronizacja dwa razy dziennie.
@@ -61,7 +61,7 @@ pnpm test
 
 6. Uruchom ręcznie `Actions → Sync Variety and Programs → Run workflow`.
 
-Synchronizacja działa o `05:17` i `17:17` UTC. Skanuje całe drzewo folderów rekurencyjnie, dlatego nowe foldery, odcinki, filmy i napisy trafiają na stronę automatycznie.
+Synchronizacja działa o `05:17` i `17:17` UTC. Skanuje całe drzewo folderów rekurencyjnie, dlatego nowe foldery, odcinki i filmy trafiają na stronę automatycznie. Pliki napisów są indeksowane, lecz nie są wyświetlane.
 
 ## Źródło
 
