@@ -12,7 +12,7 @@ test("builds the self-contained Variety and Programs archive", async () => {
   assert.match(html, /\.\/assets\//);
   assert.match(script, /SELECT A COLLECTION/);
   assert.match(script, /SEARCH PROGRAM, FILE OR YYMMDD DATE/);
-  assert.match(script, /SUBTITLES/);
+  assert.match(script, /MEDIA TYPE/);
   assert.match(script, /drive\.google\.com\/thumbnail/);
   assert.match(script, /auto-/);
   assert.doesNotMatch(html, /iframe/iu);
