@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 type RawNode = { id: string; name: string; mimeType: string; type: "file" | "folder"; size?: string | null; path: string[] };
 export type RawArchive = { generatedAt: string; sourceFolderId: string; nodes: RawNode[] };
-type MediaKind = "video" | "image" | "audio" | "subtitle" | "other";
+type MediaKind = "video" | "image" | "audio" | "other";
 type Media = RawNode & { kind: MediaKind; members: string[] };
 type ArchiveEvent = { id: string; title: string; categoryId: string; categoryTitle: string; sourceId: string; sourceType: "file" | "folder"; media: Media[]; dates: string[]; date: string; year: number; episode: number; sortKey: string; programType: string };
 type Category = { id: string; title: string; sourceIds: string[]; events: ArchiveEvent[]; featured?: boolean; order: number };
@@ -29,11 +29,12 @@ const folderUrl = (id: string) => `https://drive.google.com/drive/folders/${enco
 const fileUrl = (id: string) => `https://drive.google.com/file/d/${encodeURIComponent(id)}/view`;
 const downloadUrl = (id: string) => `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`;
 const thumbnailUrl = (id: string) => `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w1200`;
-const kindOf = (node: RawNode): MediaKind => /\.(srt|vtt|ass)$/iu.test(node.name) ? "subtitle" : node.mimeType.startsWith("video/") ? "video" : node.mimeType.startsWith("image/") ? "image" : node.mimeType.startsWith("audio/") ? "audio" : "other";
+const kindOf = (node: RawNode): MediaKind => node.mimeType.startsWith("video/") ? "video" : node.mimeType.startsWith("image/") ? "image" : node.mimeType.startsWith("audio/") ? "audio" : "other";
 const membersOf = (value: string) => memberPatterns.filter(([, pattern]) => pattern.test(value)).map(([member]) => member);
 const dateCodes = (value: string) => [...value.matchAll(/(?:^|\D)([12]\d{5})(?=\D|$)/gu)].map((match) => match[1]);
 const episodeOf = (value: string) => Number(value.match(/(?:EP(?:ISODE)?[\s._-]*|제\s*)(\d+)(?:회)?/iu)?.[1] || 0);
 const isSubtitleFolder = (value: string) => /SUBS?|SUBTITLES?|자막/iu.test(value);
+const isSubtitleFile = (value: string) => /\.(srt|vtt|ass)$/iu.test(value);
 const formatDate = (value: string) => /^\d{6}$/u.test(value) ? `20${value.slice(0, 2)}.${value.slice(2, 4)}.${value.slice(4, 6)}` : "DATE UNKNOWN";
 const displayMember = (value: string) => value === "HAKNYEON" ? "HAKNYEON (2017–2025)" : value === "NEW" ? "NEW (2017–2026)" : value;
 
@@ -64,16 +65,11 @@ function buildArchive(data: RawArchive) {
   const categories: Category[] = definitions.map((definition) => {
     const events: ArchiveEvent[] = [];
     for (const topFolder of definition.folders) {
-      const direct = data.nodes.filter((node) => node.path.length === 2 && node.path[1] === topFolder.name && node.mimeType !== "application/vnd.google-apps.spreadsheet" && !(node.type === "folder" && isSubtitleFolder(node.name)));
-      const subtitlePool = data.nodes.filter((node) => node.type === "file" && node.path[1] === topFolder.name && node.path.slice(2).some(isSubtitleFolder));
+      const direct = data.nodes.filter((node) => node.path.length === 2 && node.path[1] === topFolder.name && node.mimeType !== "application/vnd.google-apps.spreadsheet" && !isSubtitleFile(node.name) && !(node.type === "folder" && isSubtitleFolder(node.name)));
       for (const source of direct) {
-        let mediaNodes = source.type === "file" ? [source] : data.nodes.filter((node) => node.type === "file" && node.path[1] === topFolder.name && node.path[2] === source.name && node.mimeType !== "application/vnd.google-apps.spreadsheet");
+        const mediaNodes = (source.type === "file" ? [source] : data.nodes.filter((node) => node.type === "file" && node.path[1] === topFolder.name && node.path[2] === source.name && node.mimeType !== "application/vnd.google-apps.spreadsheet")).filter((node) => !isSubtitleFile(node.name));
         const sourceEpisode = episodeOf(source.name);
         const sourceDates = dateCodes(source.name);
-        if (source.type === "file") {
-          const matchingSubtitles = subtitlePool.filter((subtitle) => (sourceEpisode && episodeOf(subtitle.name) === sourceEpisode) || (sourceDates.length && dateCodes(subtitle.name).some((date) => sourceDates.includes(date))));
-          mediaNodes = [...mediaNodes, ...matchingSubtitles];
-        }
         if (!mediaNodes.length && source.type === "folder") continue;
         const media = mediaNodes.map((node) => ({ ...node, kind: kindOf(node), members: membersOf(`${source.name} ${node.name}`) }));
         const dates = [...new Set([...sourceDates, ...media.flatMap((item) => dateCodes(item.name))])].sort();
@@ -169,7 +165,7 @@ export function VarietyArchive({ data }: { data: RawArchive }) {
     return <main id="top"><Header categories={archive.categories.length} programs={archive.events.length} media={totalMedia} updated={updated} />
       <section className="event-page">
         <header className="member-gallery-head"><button onClick={() => goCategory(selectedEvent.categoryId)}>← ALL PROGRAMS</button><div><span>{selectedEvent.categoryTitle} / PROGRAM</span><h2>{selectedEvent.title}</h2></div><a href={selectedEvent.sourceType === "folder" ? folderUrl(selectedEvent.sourceId) : fileUrl(selectedEvent.sourceId)} target="_blank" rel="noreferrer">OPEN SOURCE ↗</a></header>
-        <div className="member-filters"><label>MEDIA TYPE<select value={mediaFilter} onChange={(event) => setMediaFilter(event.target.value)}><option value="all">ALL MEDIA</option><option value="video">VIDEO</option><option value="image">PHOTOS</option><option value="audio">AUDIO</option><option value="subtitle">SUBTITLES</option><option value="other">OTHER FILES</option></select></label>{availableMembers.length ? <label>MEMBER<select value={memberFilter} onChange={(event) => setMemberFilter(event.target.value)}><option value="all">ALL MEMBERS</option>{availableMembers.map((member) => <option key={member} value={member}>{displayMember(member)}</option>)}</select></label> : <div className="blank-filter" />}<p>{media.length} RESULTS</p></div>
+        <div className="member-filters"><label>MEDIA TYPE<select value={mediaFilter} onChange={(event) => setMediaFilter(event.target.value)}><option value="all">ALL MEDIA</option><option value="video">VIDEO</option><option value="image">PHOTOS</option><option value="audio">AUDIO</option><option value="other">OTHER FILES</option></select></label>{availableMembers.length ? <label>MEMBER<select value={memberFilter} onChange={(event) => setMemberFilter(event.target.value)}><option value="all">ALL MEMBERS</option>{availableMembers.map((member) => <option key={member} value={member}>{displayMember(member)}</option>)}</select></label> : <div className="blank-filter" />}<p>{media.length} RESULTS</p></div>
         <div className="member-period"><p>PROGRAM MEDIA</p><span>GOOGLE DRIVE SOURCE</span></div>
         {media.length ? <div className="media-grid">{media.map((item) => <MediaTile key={item.id} media={item} />)}</div> : <div className="empty"><strong>NO MEDIA</strong>NO FILES MATCH THESE FILTERS.</div>}
       </section><Footer sourceId={data.sourceFolderId} /></main>;

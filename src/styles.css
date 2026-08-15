@@ -5,4 +5,3 @@
 @media(min-width:721px){.category-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:clamp(210px,20vw,320px)}.category-grid button{aspect-ratio:auto;min-width:0;min-height:0;overflow:hidden}.category-grid button.featured{grid-column:auto}.category-grid strong{max-width:100%}}
 @media(min-width:721px) and (max-width:1050px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:clamp(200px,27vw,280px)}}
 @media(min-width:1051px){.category-grid.count-4{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:clamp(210px,16vw,280px)}}
-.subtitle-tile .media-visual{background:var(--blue);color:#fff}
