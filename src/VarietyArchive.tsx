@@ -182,7 +182,7 @@ export function VarietyArchive({ data }: { data: RawArchive }) {
 }
 
 function Header({ categories, programs, media, updated }: { categories: number; programs: number; media: number; updated: string }) {
-  return <header className="masthead"><div className="utility"><a className="brand" href="https://tbzarchive1206.github.io/tbzarchive/">THE BOYZ / FAN ARCHIVE</a><nav><span>VARIETY & PROGRAMS</span><span>/</span><a href="https://x.com/tbzarchive1206_" target="_blank" rel="noreferrer">TWITTER ↗</a></nav></div><a href="#home"><h1><span className="solid">VARIETY &</span><span className="outline">PROGRAMS</span></h1></a><div className="stats"><p><strong>{categories}</strong> COLLECTIONS</p><i /><p><strong>{programs}</strong> PROGRAMS</p><i /><p><strong>{media.toLocaleString("en-US")}</strong> MEDIA FILES</p><i /><p>UPDATED <strong>{updated}</strong></p></div></header>;
+  return <header className="masthead"><div className="utility"><a className="brand" href="https://tbzarchive.com/">THE BOYZ / FAN ARCHIVE</a><nav><span>VARIETY & PROGRAMS</span><span>/</span><a href="https://x.com/tbzarchive1206_" target="_blank" rel="noreferrer">TWITTER ↗</a></nav></div><a href="#home"><h1><span className="solid">VARIETY &</span><span className="outline">PROGRAMS</span></h1></a><div className="stats"><p><strong>{categories}</strong> COLLECTIONS</p><i /><p><strong>{programs}</strong> PROGRAMS</p><i /><p><strong>{media.toLocaleString("en-US")}</strong> MEDIA FILES</p><i /><p>UPDATED <strong>{updated}</strong></p></div></header>;
 }
 
 function Footer({ sourceId }: { sourceId: string }) { return <footer><span>© THE BOYZ FAN ARCHIVE</span><a href={folderUrl(sourceId)} target="_blank" rel="noreferrer">SOURCE FOLDER ↗</a><a href="#top">BACK TO TOP ↑</a></footer>; }
